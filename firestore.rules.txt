@@ -1,11 +1,9 @@
 // Reguli de securitate Firestore pentru "Familia Slăbește"
 //
-// Cum le pui: Firebase Console → Firestore Database → tab "Rules" →
-// înlocuiește tot conținutul cu ce e mai jos → Publish.
-//
-// IMPORTANT: înlocuiește cele două adrese de mai jos cu email-urile
-// REALE ale lui Bogdan și Carmen — exact cele cu care le veți crea
-// conturile la pasul "Authentication → Users → Add user" din consolă.
+// Deja completate cu email-urile reale ale conturilor voastre.
+// Dacă vreodată adăugați un cont nou (alt membru, alt email), adăugați-l
+// în lista de mai jos și apăsați din nou "Publish" în Firebase Console
+// (Firestore Database → tab "Rules").
 //
 // Ce fac: permit citire/scriere DOAR celor doi utilizatori autentificați
 // cu parolă, ale căror email-uri sunt în lista de mai jos. Chiar dacă
@@ -18,8 +16,8 @@ service cloud.firestore {
     match /families/{familyId}/data/{document} {
       allow read, write: if request.auth != null
         && request.auth.token.email in [
-          "bogdan@exemplu.ro",
-          "carmen@exemplu.ro"
+          "bphoto.ro@gmail.com",
+          "marincus.carmen@gmail.com"
         ];
     }
   }
