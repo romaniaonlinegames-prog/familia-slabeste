@@ -7,7 +7,7 @@
    Project settings → secțiunea "Your apps" → și înlocuiește-le mai jos.
    ============================================================ */
 
-const firebaseConfig = {
+export const firebaseConfig = {
   apiKey: "AIzaSyCmN4cmyICUq1W9yHaLbKFMa3_Ud5vWIus",
   authDomain: "familia-slabeste.firebaseapp.com",
   projectId: "familia-slabeste",
@@ -19,4 +19,4 @@ const firebaseConfig = {
 // Identificator unic pentru familia voastră — nu mai trebuie schimbat;
 // accesul real e protejat prin email + parolă (vezi firestore.rules.txt),
 // nu prin acest ID.
-const FAMILY_ID = "bogdan-carmen-stefan-2026";
+export const FAMILY_ID = "bogdan-carmen-stefan-2026";
