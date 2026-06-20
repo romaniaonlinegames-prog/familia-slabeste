@@ -10,6 +10,8 @@ const Storage = {
   KEY_SETTINGS: "settings",
   KEY_SHOPPING: "shopping",
   KEY_ACTIVITY: "activity",
+  KEY_GROCERY_COSTS: "groceryCosts",
+  KEY_DAY_NOTES: "dayNotes",
 
   get(key, fallback) {
     const v = Sync.get(key);
@@ -110,5 +112,35 @@ const Storage = {
   },
   todayActivitySteps(profileId) {
     return this.todayActivity(profileId).reduce((s, e) => s + (e.steps || 0), 0);
+  },
+
+  // --- Costuri cumpărături: [{date, amount}] ---
+  getGroceryCosts() {
+    return this.get(this.KEY_GROCERY_COSTS, []);
+  },
+  addGroceryCost(amount) {
+    const list = this.getGroceryCosts();
+    const today = new Date().toISOString().slice(0, 10);
+    const idx = list.findIndex(e => e.date === today);
+    if (idx >= 0) list[idx].amount = amount;
+    else list.push({ date: today, amount });
+    list.sort((a, b) => a.date.localeCompare(b.date));
+    this.set(this.KEY_GROCERY_COSTS, list);
+    return list;
+  },
+
+  // --- Note zilnice (abateri de la meniu): { "2026-06-20": "text" } ---
+  getDayNotes() {
+    return this.get(this.KEY_DAY_NOTES, {});
+  },
+  getDayNote(dateKey) {
+    return this.getDayNotes()[dateKey] || "";
+  },
+  setDayNote(dateKey, text) {
+    const notes = this.getDayNotes();
+    if (text && text.trim()) notes[dateKey] = text.trim();
+    else delete notes[dateKey];
+    this.set(this.KEY_DAY_NOTES, notes);
+    return notes;
   }
 };

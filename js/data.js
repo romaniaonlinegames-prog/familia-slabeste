@@ -336,6 +336,75 @@ const WEEK1 = {
   duminica: { prepDay: true, breakfast: "bowl_iaurt_fructe", lunch: "note", dinner: "sarmale_light", note: "Ziua pregătirilor: gătiți sarmalele și tocănița pentru săptămâna următoare. Prânzul e din resturi de sâmbătă." }
 };
 
+// Listă de cumpărături Săptămâna 1 — cantități reale, gândite pentru cumpărat
+// o singură dată, nu pentru calcul exact de rețetă (acela e pe ecranul
+// fiecărei rețete, cu gramaje precise). Aici rotunjim la ce găsești pe raft.
+const SHOPPING_LIST_WEEK1 = [
+  {
+    category: "Lactate & ouă",
+    items: [
+      { name: "Ouă", qty: "20 buc (2 cutii de 10)" },
+      { name: "Iaurt grecesc (2% sau proteic)", qty: "800 g (4-5 căni de 170-200g)" },
+      { name: "Lapte degresat", qty: "1 cutie (folosești doar 200ml, restul se păstrează)" },
+      { name: "Brânză de vaci / cottage degresată", qty: "800 g (2 pachete de ~400g)" }
+    ]
+  },
+  {
+    category: "Carne & pește",
+    items: [
+      { name: "Piept de pui", qty: "1.6 kg" },
+      { name: "Pulpă de pui dezosată, fără piele", qty: "350 g" },
+      { name: "Carne tocată slabă (pui sau curcan)", qty: "800 g" },
+      { name: "File de somon", qty: "2 bucăți (~200 g)" }
+    ]
+  },
+  {
+    category: "Legume & fructe",
+    items: [
+      { name: "Ceapă", qty: "6 cepe medii" },
+      { name: "Ceapă verde", qty: "1 legătură" },
+      { name: "Ardei gras / roșu / kapia", qty: "6 bucăți" },
+      { name: "Salată verde", qty: "1 căpățână sau 2 pungi" },
+      { name: "Castraveți", qty: "4 bucăți" },
+      { name: "Mere", qty: "6 bucăți" },
+      { name: "Țelină rădăcină", qty: "1 bucată" },
+      { name: "Morcovi", qty: "3 bucăți" },
+      { name: "Varză murată", qty: "1 kg (borcan sau pungă)" },
+      { name: "Afine sau fructe de pădure", qty: "200 g (proaspete sau congelate)" },
+      { name: "Cartof dulce", qty: "3 bucăți medii (~250g)" },
+      { name: "Ciuperci", qty: "100 g" },
+      { name: "Spanac proaspăt", qty: "1 pungă" }
+    ]
+  },
+  {
+    category: "Cămară & cereale",
+    items: [
+      { name: "Fulgi de ovăz", qty: "500 g (1 pachet)" },
+      { name: "Orez", qty: "250 g" },
+      { name: "Roșii pasate (borcan)", qty: "350 g" },
+      { name: "Roșii cuburi, conservă", qty: "2 conserve" },
+      { name: "Semințe de chia", qty: "1 pachet mic" },
+      { name: "Miere", qty: "1 borcan" },
+      { name: "Nuci", qty: "100 g" },
+      { name: "Granola fără zahăr adăugat", qty: "1 pachet mic" },
+      { name: "Praf de copt", qty: "1 plic" },
+      { name: "Amidon de porumb", qty: "1 pachet mic" },
+      { name: "Făină albă", qty: "100 g" },
+      { name: "Făină integrală", qty: "50 g (sau înlocuiești cu albă)" },
+      { name: "Griș", qty: "100 g" },
+      { name: "Semințe de susan", qty: "1 plic mic" }
+    ]
+  },
+  {
+    category: "Condimente & altele",
+    items: [
+      { name: "Ulei de măsline", qty: "verifică ce ai acasă" },
+      { name: "Sos de soia", qty: "1 sticlă mică" },
+      { name: "Condimente de bază (sare, piper, scorțișoară, cimbru, dafin, usturoi pudră, boia)", qty: "verifică ce mai ai acasă" }
+    ]
+  }
+];
+
 const DAY_LABELS = {
   luni: "Luni", marti: "Marți", miercuri: "Miercuri", joi: "Joi",
   vineri: "Vineri", sambata: "Sâmbătă", duminica: "Duminică"

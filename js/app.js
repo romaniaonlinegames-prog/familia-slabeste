@@ -476,6 +476,13 @@ const App = {
         <div id="pedometer-area"></div>
       </div>
 
+      <div class="section-title">Note despre ziua de azi</div>
+      <div class="card">
+        <p style="font-size:12.5px;color:var(--ink-soft);margin-top:-4px">Ai mâncat ceva în plus sau ai sărit o masă? Notează aici, pe scurt.</p>
+        <textarea id="day-note" rows="3" placeholder="ex: am mâncat și o felie de pizza la prânz">${Storage.getDayNote(dateKey)}</textarea>
+        <button class="btn btn-ghost" style="margin-top:10px" id="save-day-note">Salvează nota</button>
+      </div>
+
       <div class="section-title">Greutate rapidă</div>
       <div class="card">
         <div class="field-row">
@@ -524,6 +531,11 @@ const App = {
       if (bw) Storage.addWeight("bogdan", bw);
       if (cw) Storage.addWeight("carmen", cw);
       if (bw || cw) { this.toast("Greutate salvată 📈"); this.renderAzi(); }
+    });
+    document.getElementById("save-day-note").addEventListener("click", () => {
+      const text = document.getElementById("day-note").value;
+      Storage.setDayNote(dateKey, text);
+      this.toast("Notă salvată 📝");
     });
 
     // Activitate — schimbare persoană
@@ -705,57 +717,74 @@ const App = {
   // ============================================================
   // TAB: CUMPĂRĂTURI
   // ============================================================
-  aggregateShoppingList() {
-    const map = {};
-    Object.values(WEEK1).forEach(plan => {
-      if (plan.freeDay) return;
-      ["breakfast", "lunch", "snack", "dinner"].forEach(t => {
-        const rid = plan[t];
-        if (!rid || rid === "note") return;
-        RECIPES[rid].ingredients.forEach(ing => {
-          if (!map[ing.name]) map[ing.name] = { cat: ing.cat, qtys: [] };
-          map[ing.name].qtys.push(ing.qty);
-        });
-      });
-    });
-    const byCat = {};
-    SHOP_CATEGORIES.forEach(c => byCat[c] = []);
-    Object.entries(map).forEach(([name, data]) => {
-      byCat[data.cat].push({ name, qty: data.qtys.join(" + ") });
-    });
-    return byCat;
-  },
-
   renderCumparaturi() {
     const c = document.getElementById("app-content");
-    const list = this.aggregateShoppingList();
     const checks = Storage.getShoppingChecks();
+    const allKeys = SHOPPING_LIST_WEEK1.flatMap(g => g.items.map(it => `${g.category}:${it.name}`));
+    const checkedCount = allKeys.filter(k => checks[k]).length;
+    const costs = Storage.getGroceryCosts();
+    const lastCosts = costs.slice(-5).reverse();
+
     c.innerHTML = `
       <h1>Listă cumpărături</h1>
-      <p style="color:var(--ink-soft);font-size:13px">Generată automat din meniul Săptămânii 1. Organizată pe rafturi, ca la Lidl.</p>
-      ${SHOP_CATEGORIES.map(cat => {
-        const items = list[cat];
-        if (!items.length) return "";
-        return `
-          <div class="section-title">${cat}</div>
-          <div class="card card-tight">
-            ${items.map(it => {
-              const done = !!checks[it.name];
-              return `<div class="shop-item ${done ? "done" : ""}" data-name="${it.name}">
-                <button class="meal-check ${done ? "checked" : ""}" style="width:22px;height:22px;font-size:11px">${done ? "✓" : ""}</button>
-                <span class="shop-name">${it.name}</span>
-                <span class="shop-qty">${it.qty}</span>
-              </div>`;
-            }).join("")}
-          </div>`;
-      }).join("")}
-      <p style="font-size:12px;color:var(--ink-soft);text-align:center;margin-top:6px">Sugestie: Lidl are iaurt grecesc, brânzeturi light, pui și granola (Harvest Morn) la prețuri bune pentru toate rețetele de mai sus.</p>
+      <p style="color:var(--ink-soft);font-size:13px">Cantități reale pentru toată Săptămâna 1 — cumperi o dată, bifezi pe măsură ce iei de pe raft.</p>
+
+      <div class="card card-tight" style="display:flex;justify-content:space-between;align-items:center">
+        <span style="font-weight:800;font-size:15px">${checkedCount} / ${allKeys.length} luate</span>
+        <button class="btn btn-ghost" style="width:auto;padding:8px 14px;font-size:12.5px" id="reset-shopping">Resetează bifele</button>
+      </div>
+
+      ${SHOPPING_LIST_WEEK1.map(group => `
+        <div class="section-title">${group.category}</div>
+        <div class="card card-tight">
+          ${group.items.map(it => {
+            const key = `${group.category}:${it.name}`;
+            const done = !!checks[key];
+            return `<div class="shop-item ${done ? "done" : ""}" data-key="${key}">
+              <button class="meal-check ${done ? "checked" : ""}" style="width:22px;height:22px;font-size:11px">${done ? "✓" : ""}</button>
+              <span class="shop-name">${it.name}</span>
+              <span class="shop-qty">${it.qty}</span>
+            </div>`;
+          }).join("")}
+        </div>
+      `).join("")}
+
+      <div class="section-title">Cost cumpărături</div>
+      <div class="card">
+        <p style="font-size:13px;color:var(--ink-soft);margin-top:-4px">Notează suma de pe bon, ca să vezi în timp cât cheltuiți pe săptămână.</p>
+        <label>Sumă cheltuită (lei)</label>
+        <input type="number" step="0.1" id="grocery-cost-input" placeholder="ex. 285">
+        <button class="btn btn-primary" style="margin-top:10px" id="save-grocery-cost">Salvează costul</button>
+        ${lastCosts.length ? `
+          <div class="section-title" style="margin-top:18px">Istoric</div>
+          ${lastCosts.map(e => `
+            <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line);font-size:13.5px">
+              <span style="color:var(--ink-soft)">${e.date}</span>
+              <b>${e.amount} lei</b>
+            </div>`).join("")}
+        ` : ""}
+      </div>
     `;
+
     c.querySelectorAll(".shop-item").forEach(el => {
       el.addEventListener("click", () => {
-        Storage.toggleShoppingItem(el.dataset.name);
+        Storage.toggleShoppingItem(el.dataset.key);
         this.renderCumparaturi();
       });
+    });
+
+    document.getElementById("reset-shopping").addEventListener("click", () => {
+      Storage.set(Storage.KEY_SHOPPING, {});
+      this.toast("Bife resetate 🔄");
+      this.renderCumparaturi();
+    });
+
+    document.getElementById("save-grocery-cost").addEventListener("click", () => {
+      const val = +document.getElementById("grocery-cost-input").value;
+      if (!val) return;
+      Storage.addGroceryCost(val);
+      this.toast("Cost salvat 💰");
+      this.renderCumparaturi();
     });
   },
 

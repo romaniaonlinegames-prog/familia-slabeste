@@ -19,7 +19,7 @@
 
 import { firebaseConfig, FAMILY_ID } from "./firebase-config.js";
 
-const DOC_NAMES = ["profiles", "weights", "checks", "shopping", "settings", "activity"];
+const DOC_NAMES = ["profiles", "weights", "checks", "shopping", "settings", "activity", "groceryCosts", "dayNotes"];
 const FIREBASE_SDK_VERSION = "10.14.1";
 
 const Sync = {
