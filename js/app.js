@@ -248,6 +248,23 @@ const App = {
     }
   },
 
+  async checkForUpdates() {
+    this.toast("Se verifică actualizări…");
+    try {
+      if ("serviceWorker" in navigator) {
+        const reg = await navigator.serviceWorker.getRegistration();
+        if (reg) await reg.update();
+      }
+      if ("caches" in window) {
+        const keys = await caches.keys();
+        await Promise.all(keys.map(k => caches.delete(k)));
+      }
+    } catch (e) {
+      console.error("Eroare la verificarea actualizărilor", e);
+    }
+    setTimeout(() => location.reload(), 400);
+  },
+
   scheduleTodayNotifications() {
     const dk = this.todayKey();
     Notifications.scheduleToday(dk, WEEK1[dk]);
@@ -1000,8 +1017,16 @@ const App = {
         `}
       </div>
 
+      <div class="section-title">Actualizări</div>
+      <div class="card">
+        <p style="font-size:12.5px;color:var(--ink-soft);margin-top:-4px">Aplicația ia automat ultima versiune de fiecare dată când e internet. Dacă bănuiești că vezi ceva vechi, apasă butonul de mai jos.</p>
+        <button class="btn btn-outline" id="check-updates-btn">Verifică actualizări</button>
+      </div>
+
       <p style="text-align:center;font-size:11.5px;color:var(--ink-soft);margin-top:18px">Familia Slăbește · v3</p>
     `;
+
+    document.getElementById("check-updates-btn").addEventListener("click", () => this.checkForUpdates());
 
     const logoutBtn = document.getElementById("logout-btn");
     if (logoutBtn) {

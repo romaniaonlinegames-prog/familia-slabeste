@@ -2,7 +2,7 @@
    Service Worker — caching offline + afișare notificări
    ============================================================ */
 
-const CACHE_NAME = "familia-slabeste-v2";
+const CACHE_NAME = "familia-slabeste-v3";
 const ASSETS = [
   "./",
   "./index.html",
@@ -41,14 +41,19 @@ self.addEventListener("fetch", (event) => {
   // Nu interceptăm cereri către alte origini (Firebase/Firestore) — ar
   // putea rupe conexiunile de sincronizare în timp real.
   if (new URL(event.request.url).origin !== self.location.origin) return;
+
+  // Rețea întâi: cât timp există internet, aplicația ia mereu varianta
+  // cea mai nouă, automat — fără să mai fie nevoie de curățare manuală
+  // de cache la fiecare actualizare. Cache-ul rămâne doar ca rezervă
+  // pentru momentele fără internet.
   event.respondWith(
-    caches.match(event.request).then((cached) => {
-      return cached || fetch(event.request).then((resp) => {
+    fetch(event.request)
+      .then((resp) => {
         const copy = resp.clone();
         caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy)).catch(() => {});
         return resp;
-      }).catch(() => cached);
-    })
+      })
+      .catch(() => caches.match(event.request))
   );
 });
 
