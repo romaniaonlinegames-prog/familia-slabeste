@@ -402,7 +402,7 @@ const App = {
     if (plan.freeDay) {
       mealsHtml = `<div class="card"><div class="free-day-note">🎉 ${plan.note}</div></div>`;
     } else {
-      mealsHtml = `<div class="card">` + ["breakfast", "lunch", "snack", "dinner"].map(type => {
+      mealsHtml = `<div class="card">` + MEAL_ORDER.map(type => {
         const rid = plan[type];
         if (!rid || rid === "note") return "";
         const r = RECIPES[rid];
@@ -653,11 +653,14 @@ const App = {
     c.innerHTML = `
       <h1>Meniu — Săptămâna 1</h1>
       <p style="color:var(--ink-soft);font-size:13px">Bază comună de familie: aceeași mâncare pentru toți, porție de copil mai mică pentru Ștefan. Fără broccoli, fără dovlecei.</p>
+      <div class="card card-tight" style="background:var(--sage);border:1px solid var(--line);box-shadow:none">
+        <p style="font-size:12.5px;margin:0">📊 Zilele de luni-vineri au ~1750-1860 kcal — porție gândită pentru Carmen. <b>Bogdan</b>, având nevoie de mai multe calorii, adaugă o porție în plus de proteină la prânz și cină (ex. +80-100g carne/pește) ca să ajungă spre ~2600 kcal/zi — vezi ținta exactă în tab-ul Progres.</p>
+      </div>
       ${days.map(dk => {
         const plan = WEEK1[dk];
         let kcal = 0;
         if (!plan.freeDay) {
-          ["breakfast", "lunch", "snack", "dinner"].forEach(t => {
+          MEAL_ORDER.forEach(t => {
             if (plan[t] && plan[t] !== "note") kcal += RECIPES[plan[t]].kcal;
           });
         }
@@ -670,7 +673,7 @@ const App = {
             <div class="day-body" id="day-body-${dk}">
               ${plan.freeDay
                 ? `<div class="free-day-note">${plan.note}</div>`
-                : ["breakfast", "lunch", "snack", "dinner"].map(t => {
+                : MEAL_ORDER.map(t => {
                     if (!plan[t] || plan[t] === "note") return "";
                     const r = RECIPES[plan[t]];
                     return `<div class="meal-row" data-recipe="${plan[t]}" style="cursor:pointer">
@@ -975,7 +978,7 @@ const App = {
 
       <div class="section-title">Ore mese</div>
       <div class="card">
-        ${["breakfast", "lunch", "snack", "dinner"].map(t => `
+        ${MEAL_ORDER.map(t => `
           <label>${MEAL_LABELS[t]}</label>
           <input type="time" id="time-${t}" value="${settings.mealTimes[t]}">
         `).join("")}
@@ -1059,7 +1062,7 @@ const App = {
 
     document.getElementById("save-times").addEventListener("click", () => {
       const s = Storage.getSettings();
-      ["breakfast", "lunch", "snack", "dinner"].forEach(t => {
+      MEAL_ORDER.forEach(t => {
         s.mealTimes[t] = document.getElementById(`time-${t}`).value;
       });
       Storage.setSettings(s);

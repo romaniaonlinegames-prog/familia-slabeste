@@ -68,7 +68,7 @@ const Notifications = {
 
     // Notificări de masă, cu 15 minute înainte
     if (!dayPlan.freeDay) {
-      ["breakfast", "lunch", "snack", "dinner"].forEach(mealType => {
+      MEAL_ORDER.forEach(mealType => {
         const recipeId = dayPlan[mealType];
         if (!recipeId || recipeId === "note") return;
         const recipe = RECIPES[recipeId];
