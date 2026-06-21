@@ -30,7 +30,7 @@ să trimită notificări. Cea mai simplă variantă, fără cont de dezvoltator:
 
 După asta apare o iconiță proprie, se deschide pe tot ecranul, fără bara de Safari/Chrome.
 
-## 3. Sincronizare între telefoane (Bogdan ↔ Carmen, în timp real)
+## 3. Sincronizare între telefoane, în timp real
 
 Fără acest pas, aplicația merge perfect, dar **fiecare telefon își ține
 datele doar pentru el** (vedeți badge-ul „📴 doar local" din header).
@@ -38,11 +38,12 @@ Cu pasul ăsta, badge-ul devine „☁️ sincronizat" și orice bifați pe un
 telefon apare automat și pe celălalt, în câteva secunde. E gratuit, nu
 cere card bancar.
 
-**Important:** aplicația cere acum email + parolă la deschidere, nu se
-mai conectează automat și anonim ca înainte. Asta protejează datele
-voastre — repository-ul de pe GitHub e public, deci oricine poate vedea
-codul, dar nimeni nu poate intra în baza de date fără parola unuia
-dintre voi doi.
+**Cum funcționează:** fiecare persoană își creează propriul cont (email +
+parolă, nu cont Google) direct din aplicație — nu mai e nevoie să creezi
+tu manual conturile din consola Firebase. La primul cont creat dintr-o
+familie, aplicația generează un **cod scurt** (ex. `7K2M9P`) — partenerul
+îl introduce la „Am deja un cod" ca să ajungă în aceeași familie. Doar cei
+cu cont autentificat și familyId-ul corect pot vedea datele unei familii.
 
 1. Mergi pe **console.firebase.google.com**, autentifică-te cu un cont
    Google și apasă „Create a project" (sau „Add project"). Dă-i un nume,
@@ -52,33 +53,39 @@ dintre voi doi.
    Alege o regiune apropiată (ex. `eur3 (europe-west)`) și pornește în
    modul „test" (o să punem reguli proprii imediat).
 3. În meniul din stânga: **Build → Authentication → Get started → Sign-in
-   method → Email/Password → Enable → Save**.
-4. Tot în Authentication, du-te la tab-ul **„Users"** → **„Add user"** →
-   creează un cont pentru Bogdan (email + o parolă aleasă de tine) →
-   repetă pentru Carmen, cu email-ul ei. Nu există formular de
-   înregistrare în aplicație — conturile se creează doar de aici, manual,
-   o singură dată.
-5. Du-te la **Firestore Database → tab „Rules"** și înlocuiește
-   conținutul cu ce găsești în `firestore.rules.txt` din acest pachet —
-   **dar întâi** editează cele două adrese de email din fișier și
-   pune-le pe cele reale, exact cum le-ai scris la pasul 4 → **Publish**.
-6. Click pe rotița ⚙ (Project settings) din stânga sus → coboară la
+   method → Email/Password → Enable → Save**. (Nu mai trebuie create
+   conturi manual la tab-ul „Users" — fiecare își face singur cont, din
+   aplicație.)
+4. Du-te la **Firestore Database → tab „Rules"** și înlocuiește
+   conținutul cu ce găsești în `firestore.rules.txt` din acest pachet →
+   **Publish**. De data asta nu mai trebuie editat nimic în fișier —
+   regulile funcționează pentru orice familie nouă, automat.
+5. Click pe rotița ⚙ (Project settings) din stânga sus → coboară la
    „Your apps" → apasă iconița **`</>`** (Web) → dă-i un nume → „Register
    app". O să-ți apară un bloc de cod cu `const firebaseConfig = {...}`.
-7. Deschide `js/firebase-config.js` din pachetul aplicației și
-   înlocuiește valorile `INLOCUIESTE_AICI` cu ce ai copiat la pasul 6.
-8. Încarcă fișierele actualizate pe GitHub Pages / Netlify (la fel ca
-   la pasul 1) și deschide din nou linkul pe ambele telefoane.
+6. Deschide `js/firebase-config.js` din pachetul aplicației și
+   înlocuiește valorile `INLOCUIESTE_AICI` cu ce ai copiat la pasul 5.
+7. Încarcă fișierele actualizate pe GitHub Pages / Netlify (la fel ca
+   la pasul 1) și deschide din nou linkul.
 
-La prima deschidere, fiecare introduce email-ul și parola lui — telefonul
-ține minte logarea de-atunci încolo, nu trebuie reintrodusă de fiecare
-dată. Te poți deconecta oricând din tab-ul „Familia".
+La prima deschidere, fiecare apasă „Creează unul nou" și-și face cont cu
+email + parolă (emailul nu trebuie să fie unul real/verificat — nu trimitem
+nimic pe el, e doar identificator). Primul din familie apasă „Familie nouă"
+și primește un cod; partenerul apasă „Am deja un cod" și-l introduce. Codul
+e vizibil oricând în tab-ul „Familia", dacă vreți să-l recuperați.
+
+**Dacă sunteți Bogdan sau Carmen** (familia originală, cu date deja
+existente dinainte de acest sistem): la prima logare după actualizare, o
+să vi se ceară un cod de familie — alegeți „Am deja un cod" și introduceți
+exact: `bogdan-carmen-stefan-2026` (fără spații, orice literă mare/mică).
+Datele voastre vechi (meniu, greutate, bife) reapar automat, neatinse.
 
 *Despre securitate:* valorile din `firebase-config.js` (apiKey,
 projectId etc.) NU sunt parole — sunt publice prin design la orice
 aplicație Firebase, vizibile oricui din codul site-ului, indiferent cine
 l-a făcut. Protecția reală vine din regulile din `firestore.rules.txt`,
-care permit acces doar celor două email-uri pe care le-ai pus acolo.
+care permit acces doar contului care are familyId-ul corect, verificat
+prin documentul lui de cont — nu prin email-uri scrise în cod.
 
 ## 4. Despre notificări — onestitate completă
 
@@ -89,37 +96,85 @@ care permit acces doar celor două email-uri pe care le-ai pus acolo.
 
 ## 5. Despre mișcare și contorul de pași — onestitate completă
 
-- **Jurnal de activitate** (mers, alergare, treabă prin casă, joacă cu Ștefan, sport, etc.): funcționează 100% sigur, oricând, pe orice telefon — apeși un buton, alegi durata, calculează caloriile arse din greutatea ta.
+- **Jurnal de activitate** (mers, alergare, treabă prin casă, joacă cu copiii, sport, etc.): funcționează 100% sigur, oricând, pe orice telefon — apeși un buton, alegi durata, calculează caloriile arse din greutatea ta.
 - **Contorul de pași experimental** (📍 din tab-ul Azi): folosește senzorul de mișcare al telefonului, dar **doar cât ții aplicația deschisă pe ecran, cu telefonul în mână**. Nu numără pași în fundal, cu ecranul stins sau cu telefonul în buzunar — browserele nu au voie să acceseze pedometrul nativ al telefonului (acces rezervat aplicațiilor din App Store/Play Store, ca Apple Health sau Google Fit).
 - Telefoanele voastre probabil *deja* numără pașii din toată ziua, automat, prin aplicația Apple Health (iPhone) sau Google Fit (Android), preinstalată — pentru că acelea sunt aplicații native, cu acces la senzor. Nu pot trage automat datele alea în Familia Slăbește fără să construiesc o aplicație nativă separată (discutăm dacă ajungeți acolo).
 - Cu un smartwatch (Apple Watch, Wear OS, Fitbit etc.), pașii s-ar sincroniza automat și precis prin Apple Health / Google Fit — atunci chiar are sens o integrare reală. Spune-mi când ajungeți acolo.
 
 ## 6. Prima utilizare
 
-La prima deschidere, completați greutatea, înălțimea și nivelul de
-activitate pentru Bogdan și Carmen — din astea aplicația calculează
+La prima deschidere, fiecare adult completează numele, greutatea,
+înălțimea și nivelul de activitate — din astea aplicația calculează
 necesarul caloric (formula Mifflin-St Jeor) și ținta de hidratare.
+Copilul e opțional — lăsați numele necompletat dacă nu aveți copil mic
+în plan.
 
 Apăsați clopoțelul 🔔 din header ca să activați notificările.
 
-## 7. Despre rețete
+## 7. Generator de meniu — pe baza datelor voastre
 
-Meniul Săptămânii 1 e construit pe baza rețetelor din cărțile voastre
-personale "BT FIT" (Bogdan Tîrziu). Sunt aici doar pentru uzul vostru
-de familie, în acest fișier privat — nu le distribuiți mai departe, ca
-să respectăm munca autorului așa cum cere și el explicit în carte.
+Aplicația nu mai are un singur meniu fix. La prima configurare a
+profilurilor (greutate, înălțime, nivel de activitate, **obiectiv**),
+se generează automat un meniu de o săptămână, calculat să se apropie
+de necesarul vostru caloric — formula Mifflin-St Jeor, ajustată după
+obiectiv:
 
-## 8. Ce poți schimba ușor
+- **Slăbit** — 82% din necesarul de menținere (cu prag minim de
+  siguranță 1300 kcal, recomandarea cărții).
+- **Menținere** — 100% din necesar.
+- **Îngrășare** — 115% din necesar.
+
+Dacă voi doi aveți obiective diferite, meniul comun e calculat pentru
+cel cu necesarul mai mic — celălalt adaugă o porție în plus de proteină
+la prânz și cină (notă vizibilă în tab-ul Meniu).
+
+**Pentru săptămâna următoare:** din tab-ul „Meniu", apasă **„🔄
+Generează meniu nou"**. Meniul vechi se mută automat în istoric (vizibil
+din același tab), iar cel nou încearcă să folosească alte rețete decât
+săptămâna anterioară, pentru variație reală — nu doar reordonare.
+
+Generatorul alege din ~28 de rețete (mic dejun, prânz, cină, gustare
+fără gătit), grupate în blocuri de 2-3 zile ca să nu fie nevoie să
+gătiți zilnic — exact aceeași logică pe care am stabilit-o pentru
+Săptămâna 1, doar că acum se aplică automat, de fiecare dată.
+
+**Listă de cumpărături automată** — acum chiar funcționează corect cu
+orice meniu generat: ouăle (albușuri/gălbenușuri/ouă întregi din toate
+rețetele) se adună într-un singur total de cumpărat, restul
+ingredientelor identice se combină automat (ex. ceapa din 3 rețete
+diferite devine o singură linie). Nu mai e o listă fixă, scrisă de
+mine — se recalculează la fiecare meniu nou.
+
+*Notă onestă:* cu doar ~28 de rețete în bază, după 3-4 săptămâni
+generate, unele combinații încep să semene. Dacă vrei mai multă
+varietate, spune-mi și mai extind baza din restul cărții.
+
+## 8. Despre rețete — atenție dacă invitați alte familii
+
+Meniul Săptămânii 1 e construit pe baza rețetelor din cărțile personale
+"BT FIT" (Bogdan Tîrziu), licențiate strict pentru uz personal — cartea
+interzice explicit distribuirea mai departe.
+
+**Important acum că alte familii se pot loga singure:** dacă invitați
+testeri să-și facă cont și să folosească aplicația, ei văd și ei aceleași
+rețete — practic distribuiți conținutul cărții mai departe, chiar dacă
+neintenționat. Pentru testare cu câțiva prieteni apropiați, riscul e mic,
+dar pentru orice plan de lansare publică/comercială, meniul trebuie
+înlocuit cu rețete proprii sau licențiate corect, înainte să devină
+public. Nu uita de asta când treci la etapa următoare.
+
+## 9. Ce poți schimba ușor
 
 - **Orele meselor și ale hidratării:** tab „Familia", secțiunea „Ore mese" / „Hidratare".
-- **Greutate / înălțime / nivel activitate:** tot în tab „Familia".
-- **Meniul propriu-zis:** e în `js/data.js` — dacă vrei meniul Săptămâna 2,
-  spune-mi și ți-l generez din restul rețetelor din cărți (sunt încă ~115
-  rețete nefolosite).
+- **Greutate / înălțime / nivel activitate / obiectiv:** tot în tab „Familia".
+- **Meniul săptămânii:** se generează din aplicație, tab „Meniu" → „Generează meniu nou" — nu mai trebuie să-mi ceri mie. Baza de rețete e în `js/data.js`, dacă vrei să adaugi mai multe (sunt încă ~85 rețete nefolosite din cărți) — valabil doar pentru uz personal/testare restrânsă, vezi avertismentul de mai sus.
 
-## 9. Limitări de știut
+## 10. Limitări de știut
 
-- E un singur meniu (Săptămâna 1) deocamdată, gândit ca să se repete sau
-  să fie extins ușor.
+- Fiecare familie are propriul meniu generat, pe baza propriilor date —
+  nu mai e un meniu fix comun, dar baza de ~28 de rețete e încă aceeași
+  pentru toate familiile (vezi avertismentul de la secțiunea 8).
 - Fără pasul de Firebase de la secțiunea 3, datele rămân locale pe
   fiecare telefon (nu e o eroare, e doar starea „neconfigurat încă").
+- Momentan suportă exact 2 adulți + cel mult 1 copil per familie — pentru
+  mai mulți copii sau structuri diferite de familie, mai e nevoie de lucru.

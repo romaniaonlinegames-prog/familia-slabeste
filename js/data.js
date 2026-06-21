@@ -339,6 +339,7 @@ const RECIPES = {
     type: "snack",
     servings: 1,
     kcal: 210, protein: 5, carbs: 28, fat: 9,
+    noCook: true,
     ingredients: [
       { name: "măr", qty: "1 bucată", cat: "Legume & fructe" },
       { name: "migdale", qty: "20 g (~15 buc)", cat: "Cămară & cereale" }
@@ -355,6 +356,7 @@ const RECIPES = {
     type: "snack",
     servings: 1,
     kcal: 220, protein: 23, carbs: 14, fat: 8,
+    noCook: true,
     ingredients: [
       { name: "iaurt grecesc 2%", qty: "200 g", cat: "Lactate & ouă" },
       { name: "afine sau fructe de pădure", qty: "50 g", cat: "Legume & fructe" },
@@ -372,6 +374,7 @@ const RECIPES = {
     type: "snack",
     servings: 1,
     kcal: 170, protein: 14, carbs: 4, fat: 12,
+    noCook: true,
     ingredients: [
       { name: "ouă", qty: "2 buc", cat: "Lactate & ouă" },
       { name: "roșii cherry", qty: "80 g", cat: "Legume & fructe" },
@@ -382,6 +385,321 @@ const RECIPES = {
       "La gustare, curăță un ou, taie-l în jumătate, servește cu roșiile cherry."
     ],
     tip: "Fierbe 6-8 ouă duminica, în lot — apoi gustarea asta nu mai cere deloc gătit zilnic, doar curățat coaja."
+  },
+
+  // ---- Extindere Iunie 2026: rețete suplimentare pentru generatorul de meniu ----
+
+  salata_ou_naut: {
+    title: "Salată cu ou, năut și telemea",
+    type: "lunch",
+    servings: 4,
+    kcal: 560, protein: 38, carbs: 41, fat: 24,
+    ingredients: [
+      { name: "ouă fierte", qty: "2 buc", cat: "Lactate & ouă" },
+      { name: "năut fiert", qty: "125 g", cat: "Cămară & cereale" },
+      { name: "salată verde", qty: "85 g", cat: "Legume & fructe" },
+      { name: "ardei gras", qty: "85 g", cat: "Legume & fructe" },
+      { name: "telemea light", qty: "55 g", cat: "Lactate & ouă" },
+      { name: "ulei de măsline", qty: "7 g", cat: "Condimente & altele" }
+    ],
+    steps: [
+      "Fierbe ouăle 8-10 minute, taie-le felii.",
+      "Taie ardeiul cuburi și rupe salata verde.",
+      "Amestecă într-un bol năutul, oul, legumele și telemeaua tăiată cuburi.",
+      "Stropește cu ulei și amestecă ușor."
+    ],
+    tip: "Dacă folosești năut la conservă, clătește-l bine sub jet de apă rece."
+  },
+
+  salata_curcan_rosii: {
+    title: "Salată cu curcan, roșii uscate și semințe",
+    type: "lunch",
+    servings: 4,
+    kcal: 540, protein: 54, carbs: 27, fat: 19,
+    ingredients: [
+      { name: "piept de curcan", qty: "180 g", cat: "Carne & pește" },
+      { name: "roșii uscate", qty: "35 g", cat: "Cămară & cereale" },
+      { name: "salată verde", qty: "85 g", cat: "Legume & fructe" },
+      { name: "castraveți", qty: "125 g", cat: "Legume & fructe" },
+      { name: "ardei gras", qty: "100 g", cat: "Legume & fructe" },
+      { name: "semințe de floarea-soarelui", qty: "17 g", cat: "Cămară & cereale" },
+      { name: "ulei de măsline", qty: "7 g", cat: "Condimente & altele" }
+    ],
+    steps: [
+      "Gătește pieptul de curcan pe grătar sau în tigaie, 6-7 minute.",
+      "Taie roșiile uscate și legumele.",
+      "Combină totul într-un bol cu semințele și frunzele de salată.",
+      "Stropește cu ulei și amestecă bine."
+    ],
+    tip: "Hidratează roșiile uscate 5 minute în apă caldă dacă sunt prea tari."
+  },
+
+  bol_halloumi_naut: {
+    title: "Bol cu halloumi și năut (vegetarian)",
+    type: "lunch",
+    servings: 2,
+    kcal: 520, protein: 35, carbs: 38, fat: 23,
+    ingredients: [
+      { name: "halloumi light", qty: "80 g", cat: "Lactate & ouă" },
+      { name: "năut fiert", qty: "105 g", cat: "Cămară & cereale" },
+      { name: "morcov", qty: "65 g", cat: "Legume & fructe" },
+      { name: "ardei gras", qty: "65 g", cat: "Legume & fructe" },
+      { name: "salată verde", qty: "65 g", cat: "Legume & fructe" },
+      { name: "ulei de măsline", qty: "7 g", cat: "Condimente & altele" },
+      { name: "oțet balsamic", qty: "13 ml", cat: "Condimente & altele" },
+      { name: "miere", qty: "7 g", cat: "Cămară & cereale" }
+    ],
+    steps: [
+      "Prăjește halloumi în tigaie fără ulei, 2-3 minute pe fiecare parte.",
+      "Taie legumele și amestecă-le cu năutul.",
+      "Pregătește dressingul din oțet, ulei și miere.",
+      "Adaugă halloumi peste salată și toarnă dressingul."
+    ],
+    tip: "Singura masă vegetariană din meniu — bună de alternat când vreți o zi mai ușoară, fără carne."
+  },
+
+  salata_calda_pui_porumb: {
+    title: "Salată caldă cu pui, porumb și sos de iaurt",
+    type: "lunch",
+    servings: 2,
+    kcal: 480, protein: 60, carbs: 22, fat: 13,
+    ingredients: [
+      { name: "piept de pui", qty: "350 g", cat: "Carne & pește" },
+      { name: "boia dulce, chimen, usturoi pudră", qty: "după gust", cat: "Condimente & altele" },
+      { name: "varză albă", qty: "100 g, tocată fin", cat: "Legume & fructe" },
+      { name: "porumb fiert, scurs", qty: "250 g", cat: "Cămară & cereale" },
+      { name: "ceapă roșie", qty: "1/2 bucată mică", cat: "Legume & fructe" },
+      { name: "iaurt grecesc proteic", qty: "80 g", cat: "Lactate & ouă" },
+      { name: "maioneză light", qty: "15 g", cat: "Condimente & altele" },
+      { name: "telemea light", qty: "20 g", cat: "Lactate & ouă" },
+      { name: "lămâie sau lime", qty: "1/2 bucată", cat: "Legume & fructe" }
+    ],
+    steps: [
+      "Gătește pieptul de pui condimentat în tigaie, lasă-l 2-3 min, apoi taie-l cuburi.",
+      "În aceeași tigaie, rumenește puțin porumbul.",
+      "Amestecă iaurtul cu maioneza și zeama de lămâie pentru sos.",
+      "Combină varza, porumbul, ceapa, puiul, brânza și sosul într-un bol."
+    ],
+    tip: "Cea mai proteică salată din meniu — foarte săturoasă, bună pentru zile active."
+  },
+
+  salata_ton_porumb: {
+    title: "Salată de ton cu porumb (fără gătit)",
+    type: "lunch",
+    servings: 2,
+    kcal: 380, protein: 42, carbs: 26, fat: 13,
+    noCook: true,
+    ingredients: [
+      { name: "ton în suc propriu, scurs", qty: "160 g", cat: "Carne & pește" },
+      { name: "porumb fiert", qty: "100 g", cat: "Cămară & cereale" },
+      { name: "castraveți murați", qty: "100 g", cat: "Legume & fructe" },
+      { name: "ceapă roșie", qty: "50 g, tocată", cat: "Legume & fructe" },
+      { name: "ou fiert", qty: "1 gălbenuș", cat: "Lactate & ouă" },
+      { name: "iaurt grecesc 2%", qty: "80 g", cat: "Lactate & ouă" },
+      { name: "muștar", qty: "1 linguriță", cat: "Condimente & altele" },
+      { name: "ulei de măsline", qty: "5 g", cat: "Condimente & altele" }
+    ],
+    steps: [
+      "Amestecă tonul cu porumbul, castraveții tocați și ceapa.",
+      "Separat, pasează gălbenușul fiert cu iaurtul, muștarul și uleiul.",
+      "Combină totul și lasă la rece 20 de minute."
+    ],
+    tip: "Singura masă principală complet fără gătit — perfectă pentru o zi fără chef de bucătărie."
+  },
+
+  wrap_pui_crema: {
+    title: "Wrap cu pui cremos și brânză",
+    type: "lunch",
+    servings: 2,
+    kcal: 580, protein: 48, carbs: 42, fat: 24,
+    ingredients: [
+      { name: "piept de pui", qty: "300 g, cuburi", cat: "Carne & pește" },
+      { name: "usturoi", qty: "2 căței, tocați", cat: "Condimente & altele" },
+      { name: "lapte 1.5%", qty: "100 ml", cat: "Lactate & ouă" },
+      { name: "cremă de brânză light", qty: "40 g", cat: "Lactate & ouă" },
+      { name: "cașcaval light ras", qty: "50 g", cat: "Lactate & ouă" },
+      { name: "lipii proteice", qty: "2 buc", cat: "Cămară & cereale" },
+      { name: "boia, sare, ierburi italiene", qty: "după gust", cat: "Condimente & altele" }
+    ],
+    steps: [
+      "Condimentează puiul și gătește-l cu usturoiul tocat până se rumenește.",
+      "Adaugă laptele și crema de brânză, fierbe 5 minute la foc mic până devine cremos.",
+      "Presară cașcavalul, lasă să se topească.",
+      "Umple lipiile cu amestecul, rulează și servește (sau coace 10 min la 180°C pentru crustă crocantă)."
+    ],
+    tip: "Se păstrează la frigider 3-4 zile — bun de reîncălzit la cuptor sau air fryer."
+  },
+
+  pui_cremos_cartofi: {
+    title: "Pui cremos cu cartofi și brânză",
+    type: "dinner",
+    servings: 4,
+    kcal: 520, protein: 46, carbs: 38, fat: 17,
+    ingredients: [
+      { name: "cartofi", qty: "800 g, cuburi", cat: "Legume & fructe" },
+      { name: "usturoi pudră", qty: "1 lingură", cat: "Condimente & altele" },
+      { name: "piept de pui", qty: "500 g, cuburi", cat: "Carne & pește" },
+      { name: "ceapă", qty: "1 buc, tocată", cat: "Legume & fructe" },
+      { name: "pastă de roșii", qty: "1 lingură", cat: "Cămară & cereale" },
+      { name: "supă de pui", qty: "300 ml", cat: "Cămară & cereale" },
+      { name: "smântână light pentru gătit", qty: "120 ml", cat: "Lactate & ouă" },
+      { name: "brânză rasă (mozzarella/cașcaval light)", qty: "100 g", cat: "Lactate & ouă" }
+    ],
+    steps: [
+      "Amestecă cartofii cu usturoi pudră, sare, piper și coace-i 20 minute la 200°C.",
+      "Gătește puiul condimentat în tigaie, adaugă ceapa, apoi pasta de roșii.",
+      "Toarnă supa și smântâna, fierbe 5-7 minute până devine cremos.",
+      "Adaugă cartofii, presară brânza și gratinează 5-7 minute."
+    ],
+    tip: "Bun de gătit o dată, ține 2-3 zile la frigider, se reîncălzește excelent."
+  },
+
+  chiftelute_curcan_morcov: {
+    title: "Chiftelițe de curcan cu morcov, la cuptor",
+    type: "dinner",
+    servings: 4,
+    kcal: 400, protein: 32, carbs: 28, fat: 14,
+    ingredients: [
+      { name: "carne tocată de curcan", qty: "500 g", cat: "Carne & pește" },
+      { name: "morcov", qty: "1 mic, ras", cat: "Legume & fructe" },
+      { name: "ouă", qty: "2 buc", cat: "Lactate & ouă" },
+      { name: "fulgi de ovăz", qty: "3 linguri", cat: "Cămară & cereale" },
+      { name: "ceapă", qty: "1 mică, tocată", cat: "Legume & fructe" },
+      { name: "usturoi", qty: "2 căței", cat: "Condimente & altele" },
+      { name: "cartofi sau orez (garnitură)", qty: "600 g", cat: "Legume & fructe" },
+      { name: "sare, piper, cimbru", qty: "după gust", cat: "Condimente & altele" }
+    ],
+    steps: [
+      "Amestecă morcovul ras cu restul ingredientelor pentru chiftelițe.",
+      "Formează bilute mici, așază-le pe hârtie de copt.",
+      "Coace la 190°C, 25-30 minute, până se rumenesc.",
+      "Servește cu cartofi copți sau orez fiert alături."
+    ],
+    tip: "Se congelează excelent — fă o tură dublă și ai cină gata pentru altă săptămână."
+  },
+
+  lasagna_carne_slaba: {
+    title: "Lasagna cu carne slabă și spanac",
+    type: "dinner",
+    servings: 6,
+    kcal: 420, protein: 36, carbs: 30, fat: 14,
+    ingredients: [
+      { name: "foi de lasagna", qty: "9 buc", cat: "Cămară & cereale" },
+      { name: "carne tocată de curcan/pui", qty: "500 g", cat: "Carne & pește" },
+      { name: "spanac congelat", qty: "500 g", cat: "Legume & fructe" },
+      { name: "brânză de vaci", qty: "455 g", cat: "Lactate & ouă" },
+      { name: "ceapă", qty: "1 medie", cat: "Legume & fructe" },
+      { name: "usturoi", qty: "2 căței", cat: "Condimente & altele" },
+      { name: "suc de roșii fără zahăr", qty: "1000 g", cat: "Cămară & cereale" },
+      { name: "cașcaval light", qty: "100 g", cat: "Lactate & ouă" }
+    ],
+    steps: [
+      "Călește ceapa și usturoiul, adaugă carnea, apoi sucul de roșii.",
+      "Amestecă brânza de vaci cu spanacul decongelat și scurs.",
+      "Într-o tavă, alternează foi — amestec brânză/spanac — carne — cașcaval.",
+      "Coace 30 minute cu folie, apoi 30 minute fără folie, la 180°C."
+    ],
+    tip: "Porție generoasă, gătită o dată — perfectă pentru o seară de weekend când vreți ceva consistent."
+  },
+
+  french_toast_banane: {
+    title: "French toast cu banane și scorțișoară",
+    type: "breakfast",
+    servings: 1,
+    kcal: 430, protein: 27, carbs: 54, fat: 11,
+    ingredients: [
+      { name: "pâine integrală", qty: "4 felii", cat: "Cămară & cereale" },
+      { name: "albușuri", qty: "4 buc", cat: "Lactate & ouă" },
+      { name: "banană", qty: "1 buc, coaptă", cat: "Legume & fructe" },
+      { name: "scorțișoară, vanilie", qty: "după gust", cat: "Condimente & altele" }
+    ],
+    steps: [
+      "Amestecă albușurile cu scorțișoara, vanilia și un praf de sare.",
+      "Înmoaie feliile de pâine în amestec.",
+      "Prăjește-le într-o tigaie antiaderentă.",
+      "Servește cu banană tăiată deasupra."
+    ],
+    tip: "Adaugă iaurt grecesc deasupra pentru și mai multă proteină."
+  },
+
+  clatite_ovaz_banana: {
+    title: "Clătite de ovăz cu banană",
+    type: "breakfast",
+    servings: 1,
+    kcal: 440, protein: 20, carbs: 60, fat: 12,
+    ingredients: [
+      { name: "banane", qty: "2 buc", cat: "Legume & fructe" },
+      { name: "albușuri", qty: "4 buc", cat: "Lactate & ouă" },
+      { name: "fulgi de ovăz", qty: "80 g", cat: "Cămară & cereale" },
+      { name: "scorțișoară, vanilie", qty: "după gust", cat: "Condimente & altele" }
+    ],
+    steps: [
+      "Pasează bananele și amestecă-le cu albușurile, ovăzul, scorțișoara și vanilia.",
+      "Coace clătite mici într-o tigaie antiaderentă, 2-3 minute pe fiecare parte."
+    ],
+    tip: "Adaugă un strop de iaurt grecesc sau o linguriță de unt de arahide deasupra."
+  },
+
+  budinca_chia_mere: {
+    title: "Budincă de chia cu mere și scorțișoară",
+    type: "snack",
+    servings: 2,
+    kcal: 200, protein: 18, carbs: 16, fat: 5,
+    noCook: true,
+    ingredients: [
+      { name: "iaurt grecesc 0%", qty: "150 g", cat: "Lactate & ouă" },
+      { name: "semințe de chia", qty: "15 g", cat: "Cămară & cereale" },
+      { name: "îndulcitor", qty: "după gust", cat: "Cămară & cereale" },
+      { name: "măr", qty: "1/2 bucată, rasă", cat: "Legume & fructe" },
+      { name: "scorțișoară", qty: "după gust", cat: "Condimente & altele" }
+    ],
+    steps: [
+      "Amestecă iaurtul, chia și îndulcitorul.",
+      "Lasă la frigider minimum 3 ore.",
+      "Adaugă mărul ras și scorțișoara înainte de servire."
+    ],
+    tip: "Fără gătit — doar amestecat și lăsat la rece. Bun de pregătit din timp, pentru 2-3 zile."
+  },
+
+  budinca_chia_branza_banana: {
+    title: "Budincă de chia cu brânză dulce și banană",
+    type: "snack",
+    servings: 2,
+    kcal: 230, protein: 11, carbs: 27, fat: 8,
+    noCook: true,
+    ingredients: [
+      { name: "lapte 1.5%", qty: "150 ml", cat: "Lactate & ouă" },
+      { name: "semințe de chia", qty: "15 g", cat: "Cămară & cereale" },
+      { name: "banană", qty: "80 g", cat: "Legume & fructe" },
+      { name: "brânză dulce 5%", qty: "70 g", cat: "Lactate & ouă" },
+      { name: "esență de vanilie", qty: "după gust", cat: "Condimente & altele" }
+    ],
+    steps: [
+      "Amestecă laptele cu chia și vanilia, lasă la rece 20-30 minute.",
+      "Pasează banana și amestec-o cu brânza dulce.",
+      "Combină totul într-un borcan sau bol."
+    ],
+    tip: "Fără gătit — gata în 5 minute de lucru efectiv, restul stă la frigider."
+  },
+
+  oua_umplute_ton: {
+    title: "Ouă umplute cu ton și iaurt",
+    type: "snack",
+    servings: 2,
+    kcal: 200, protein: 25, carbs: 2, fat: 11,
+    noCook: true,
+    ingredients: [
+      { name: "ouă fierte", qty: "4 buc", cat: "Lactate & ouă" },
+      { name: "ton în conservă, în suc propriu", qty: "80 g", cat: "Carne & pește" },
+      { name: "iaurt grecesc", qty: "50 g", cat: "Lactate & ouă" },
+      { name: "sare, piper, zeamă de lămâie", qty: "după gust", cat: "Condimente & altele" }
+    ],
+    steps: [
+      "Taie ouăle fierte în jumătate, scoate gălbenușurile.",
+      "Pasează gălbenușurile cu tonul, iaurtul și condimentele.",
+      "Umple jumătățile de ou cu compoziția."
+    ],
+    tip: "Fierbe ouăle din timp, în lot — montarea durează doar 3-4 minute."
   }
 };
 

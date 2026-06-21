@@ -18,11 +18,25 @@ const Calc = {
     return Math.round(this.bmr(profile) * this.activityMultiplier(profile.activity));
   },
 
-  // Țintă calorică pentru slăbit: deficit 18%, cu prag minim de siguranță 1300 kcal
-  targetCalories(profile) {
+  // Procent față de necesarul de menținere, în funcție de obiectiv
+  GOAL_FACTORS: { slabit: 0.82, mentinere: 1.0, ingrasare: 1.15 },
+
+  GOAL_LABELS: { slabit: "Slăbit", mentinere: "Menținere", ingrasare: "Îngrășare" },
+
+  // Țintă calorică pentru orice obiectiv. Pentru slăbit, păstrăm pragul
+  // minim de siguranță 1300 kcal (recomandarea cărții — nu coborî sub
+  // el fără sfat profesional). Pentru menținere/îngrășare nu se aplică
+  // un prag minim, fiindcă nu e o restricție.
+  targetCaloriesForGoal(profile, goal) {
     const maint = this.maintenanceCalories(profile);
-    const target = Math.round(maint * 0.82);
-    return Math.max(target, 1300);
+    const factor = this.GOAL_FACTORS[goal] || this.GOAL_FACTORS.slabit;
+    const target = Math.round(maint * factor);
+    return goal === "slabit" ? Math.max(target, 1300) : target;
+  },
+
+  // Țintă calorică pe baza obiectivului salvat în profil (implicit: slăbit)
+  targetCalories(profile) {
+    return this.targetCaloriesForGoal(profile, profile.goal || "slabit");
   },
 
   // Necesar de apă: 33ml/kg (în intervalul recomandat 30-40ml/kg), rotunjit la 50ml

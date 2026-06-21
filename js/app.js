@@ -92,6 +92,10 @@ const App = {
       this.renderLogin();
       return;
     }
+    if (Sync.authStatus === "needs-family") {
+      this.renderFamilySetup();
+      return;
+    }
 
     this.profiles = Storage.getProfiles();
     if (!this.profiles) {
@@ -102,23 +106,36 @@ const App = {
   },
 
   renderLogin() {
+    if (!this._authMode) this._authMode = "login"; // "login" | "signup"
+    const isSignup = this._authMode === "signup";
     const c = document.getElementById("app-content");
     c.innerHTML = `
       <div class="onb-hero">
-        <div class="big">🔒</div>
-        <h1>Conectare</h1>
-        <p style="color:var(--ink-soft)">Intră cu email-ul și parola create în Firebase Console, pentru tine sau Carmen.</p>
+        <div class="big">${isSignup ? "🌱" : "🔒"}</div>
+        <h1>${isSignup ? "Cont nou" : "Conectare"}</h1>
+        <p style="color:var(--ink-soft)">${isSignup
+          ? "Alege un email (poate fi orice, nu trimitem nimic pe el) și o parolă — fără cont Google, fără alte date."
+          : "Intră cu email-ul și parola tale."}</p>
       </div>
       <div class="card">
         <label>Email</label>
-        <input type="text" id="login-email" autocomplete="username" placeholder="bogdan@exemplu.ro">
+        <input type="text" id="login-email" autocomplete="username" placeholder="ex: familiamea@exemplu.ro">
         <label>Parolă</label>
-        <input type="password" id="login-password" autocomplete="current-password" placeholder="parola ta">
+        <input type="password" id="login-password" autocomplete="${isSignup ? "new-password" : "current-password"}" placeholder="${isSignup ? "minim 6 caractere" : "parola ta"}">
         <p id="login-error" style="color:var(--danger);font-size:13px;display:none;margin-top:10px"></p>
-        <button class="btn btn-primary" style="margin-top:14px" id="login-submit">Conectează-te</button>
+        <button class="btn btn-primary" style="margin-top:14px" id="login-submit">${isSignup ? "Creează cont" : "Conectează-te"}</button>
       </div>
-      <p style="text-align:center;font-size:12px;color:var(--ink-soft)">Nu ai cont încă? Se creează manual din Firebase Console → Authentication → Users → Add user.</p>
+      <p style="text-align:center;font-size:12.5px;color:var(--ink-soft)">
+        ${isSignup ? "Ai deja cont?" : "Nu ai cont încă?"}
+        <a href="#" id="auth-switch" style="color:var(--pin);font-weight:700">${isSignup ? "Conectează-te" : "Creează unul nou"}</a>
+      </p>
     `;
+    document.getElementById("auth-switch").addEventListener("click", (e) => {
+      e.preventDefault();
+      this._authMode = isSignup ? "login" : "signup";
+      this.renderLogin();
+    });
+
     const submit = async () => {
       const email = document.getElementById("login-email").value.trim();
       const password = document.getElementById("login-password").value;
@@ -126,10 +143,77 @@ const App = {
       const btn = document.getElementById("login-submit");
       errEl.style.display = "none";
       if (!email || !password) return;
-      btn.textContent = "Se conectează…";
+      btn.textContent = isSignup ? "Se creează…" : "Se conectează…";
       btn.disabled = true;
       try {
-        await Sync.login(email, password);
+        if (isSignup) await Sync.signup(email, password);
+        else await Sync.login(email, password);
+        this.updateSyncBadge();
+        this._afterAuthRoute();
+      } catch (e) {
+        errEl.textContent = e.message;
+        errEl.style.display = "block";
+        btn.textContent = isSignup ? "Creează cont" : "Conectează-te";
+        btn.disabled = false;
+      }
+    };
+    document.getElementById("login-submit").addEventListener("click", submit);
+    document.getElementById("login-password").addEventListener("keydown", (e) => { if (e.key === "Enter") submit(); });
+  },
+
+  _afterAuthRoute() {
+    if (Sync.authStatus === "needs-family") {
+      this.renderFamilySetup();
+      return;
+    }
+    this.profiles = Storage.getProfiles();
+    if (!this.profiles) this.renderOnboarding();
+    else this.switchTab("azi");
+  },
+
+  renderFamilySetup() {
+    if (!this._familyMode) this._familyMode = "create"; // "create" | "join"
+    const isJoin = this._familyMode === "join";
+    const c = document.getElementById("app-content");
+    c.innerHTML = `
+      <div class="onb-hero">
+        <div class="big">👪</div>
+        <h1>Familia voastră</h1>
+        <p style="color:var(--ink-soft)">${isJoin
+          ? "Introdu codul primit de la partenerul tău, ca să vedeți aceleași date amândoi."
+          : "Sunteți primul din familie care intră — vi se creează un cod scurt, de partajat cu partenerul."}</p>
+      </div>
+      <div class="card">
+        <div class="seg" id="family-mode-toggle">
+          <button type="button" data-m="create" class="${!isJoin ? "active" : ""}">Familie nouă</button>
+          <button type="button" data-m="join" class="${isJoin ? "active" : ""}">Am deja un cod</button>
+        </div>
+        ${isJoin ? `
+          <label style="margin-top:14px">Codul familiei</label>
+          <input type="text" id="family-code-input" placeholder="ex: 7K2M9P" style="text-transform:uppercase">
+        ` : `
+          <p style="font-size:13px;color:var(--ink-soft);margin-top:14px">Apasă butonul de mai jos — îți generăm automat un cod unic.</p>
+        `}
+        <p id="family-error" style="color:var(--danger);font-size:13px;display:none;margin-top:10px"></p>
+        <button class="btn btn-primary" style="margin-top:14px" id="family-submit">${isJoin ? "Alătură-te" : "Creează familia"}</button>
+      </div>
+    `;
+    c.querySelectorAll("#family-mode-toggle button").forEach(btn => {
+      btn.addEventListener("click", () => {
+        this._familyMode = btn.dataset.m;
+        this.renderFamilySetup();
+      });
+    });
+    document.getElementById("family-submit").addEventListener("click", async () => {
+      const errEl = document.getElementById("family-error");
+      const btn = document.getElementById("family-submit");
+      errEl.style.display = "none";
+      const code = isJoin ? document.getElementById("family-code-input").value : Sync.generateFamilyCode();
+      if (isJoin && !code.trim()) return;
+      btn.textContent = "Un moment…";
+      btn.disabled = true;
+      try {
+        await Sync.setupFamily(code);
         this.updateSyncBadge();
         this.profiles = Storage.getProfiles();
         if (!this.profiles) this.renderOnboarding();
@@ -137,12 +221,10 @@ const App = {
       } catch (e) {
         errEl.textContent = e.message;
         errEl.style.display = "block";
-        btn.textContent = "Conectează-te";
+        btn.textContent = isJoin ? "Alătură-te" : "Creează familia";
         btn.disabled = false;
       }
-    };
-    document.getElementById("login-submit").addEventListener("click", submit);
-    document.getElementById("login-password").addEventListener("keydown", (e) => { if (e.key === "Enter") submit(); });
+    });
   },
 
   updateSyncBadge() {
@@ -267,7 +349,11 @@ const App = {
 
   scheduleTodayNotifications() {
     const dk = this.todayKey();
-    Notifications.scheduleToday(dk, WEEK1[dk]);
+    Notifications.scheduleToday(dk, this.activeWeek()[dk]);
+  },
+
+  activeWeek() {
+    return Storage.getCurrentWeek().week;
   },
 
   // ============================================================
@@ -283,24 +369,26 @@ const App = {
       </div>
 
       <div class="card">
-        <h2>👤 Bogdan</h2>
-        ${this.profileFormFields("bogdan", { age: 35, weightKg: 120, heightCm: 178, gender: "M" })}
+        <h2>👤 Primul adult</h2>
+        ${this.profileFormFields("bogdan", { name: "", age: "", weightKg: "", heightCm: "", gender: "M" })}
       </div>
 
       <div class="card">
-        <h2>👤 Carmen</h2>
-        ${this.profileFormFields("carmen", { age: 34, weightKg: 80, heightCm: 165, gender: "F" })}
+        <h2>👤 Al doilea adult</h2>
+        ${this.profileFormFields("carmen", { name: "", age: "", weightKg: "", heightCm: "", gender: "F" })}
       </div>
 
       <div class="card">
-        <h2>🧒 Ștefan</h2>
+        <h2>🧒 Copil (opțional)</h2>
         <p style="font-size:13px;color:var(--ink-soft);margin-top:-4px">
-          Ștefan participă la mesele de familie, cu porție de copil. Nu urmărim greutatea lui și nu facem
-          restricție calorică pentru el — la 4 ani, ce contează e un obicei alimentar sănătos, nu un număr pe cântar.
-          Dacă aveți o îngrijorare reală despre greutatea lui, cel mai bun pas e un consult la medicul pediatru.
+          Dacă aveți un copil mic, participă la mesele de familie, cu porție adaptată vârstei. Nu urmărim
+          greutatea copiilor și nu facem restricție calorică pentru ei — ce contează e un obicei alimentar
+          sănătos, nu un număr pe cântar. Lăsați numele necompletat dacă nu aveți copil în plan.
         </p>
+        <label>Nume (opțional)</label>
+        <input type="text" id="onb-stefan-name" placeholder="ex: Ștefan">
         <label>Vârstă</label>
-        <input type="number" id="onb-stefan-age" value="4" min="1" max="17">
+        <input type="number" id="onb-stefan-age" placeholder="ex: 4" min="1" max="17">
       </div>
 
       <button class="btn btn-primary" id="onb-save">Salvează și continuă</button>
@@ -320,20 +408,22 @@ const App = {
 
   profileFormFields(id, d) {
     return `
+      <label>Nume</label>
+      <input type="text" id="onb-${id}-name" value="${d.name}" placeholder="${id === "bogdan" ? "ex: Bogdan" : "ex: Carmen"}">
       <div class="field-row">
         <div>
           <label>Vârstă</label>
-          <input type="number" id="onb-${id}-age" value="${d.age}">
+          <input type="number" id="onb-${id}-age" value="${d.age}" placeholder="ex: 32">
         </div>
         <div>
           <label>Greutate (kg)</label>
-          <input type="number" id="onb-${id}-weight" value="${d.weightKg}" step="0.1">
+          <input type="number" id="onb-${id}-weight" value="${d.weightKg}" step="0.1" placeholder="ex: 78">
         </div>
       </div>
       <div class="field-row">
         <div>
           <label>Înălțime (cm)</label>
-          <input type="number" id="onb-${id}-height" value="${d.heightCm}">
+          <input type="number" id="onb-${id}-height" value="${d.heightCm}" placeholder="ex: 172">
         </div>
         <div>
           <label>Gen</label>
@@ -345,46 +435,72 @@ const App = {
       </div>
       <label>Nivel de activitate</label>
       <div class="seg" id="onb-${id}-activity">
-        <button type="button" data-v="sedentar" class="${id === 'bogdan' ? '' : 'active'}">Sedentar</button>
+        <button type="button" data-v="sedentar">Sedentar</button>
         <button type="button" data-v="moderat" class="active">Moderat</button>
         <button type="button" data-v="intens">Intens</button>
+      </div>
+      <label>Obiectiv</label>
+      <div class="seg" id="onb-${id}-goal">
+        <button type="button" data-v="slabit" class="active">Slăbit</button>
+        <button type="button" data-v="mentinere">Menținere</button>
+        <button type="button" data-v="ingrasare">Îngrășare</button>
       </div>
     `;
   },
 
-  readActivitySeg(id) {
-    const seg = document.getElementById(`onb-${id}-activity`);
+  readSeg(elId) {
+    const seg = document.getElementById(elId);
     const active = seg.querySelector("button.active");
-    return active ? active.dataset.v : "moderat";
+    return active ? active.dataset.v : null;
+  },
+
+  readActivitySeg(id) {
+    return this.readSeg(`onb-${id}-activity`) || "moderat";
+  },
+
+  readGoalSeg(id) {
+    return this.readSeg(`onb-${id}-goal`) || "slabit";
   },
 
   saveOnboarding() {
-    const buildProfile = (id, name, trackWeight) => ({
-      id, name,
+    const buildProfile = (id, trackWeight) => ({
+      id,
+      name: document.getElementById(`onb-${id}-name`).value.trim() || (id === "bogdan" ? "Adult 1" : "Adult 2"),
       age: +document.getElementById(`onb-${id}-age`).value || 30,
-      weightKg: +document.getElementById(`onb-${id}-weight`).value || 70,
+      weightKg: +document.getElementById(`onb-${id}-weight`).value || 75,
       heightCm: +document.getElementById(`onb-${id}-height`).value || 170,
       gender: document.getElementById(`onb-${id}-gender`).value,
       activity: this.readActivitySeg(id),
-      goal: "slabit",
+      goal: this.readGoalSeg(id),
       trackWeight
     });
 
     const profiles = {
-      bogdan: buildProfile("bogdan", "Bogdan", true),
-      carmen: buildProfile("carmen", "Carmen", true),
-      stefan: {
-        id: "stefan", name: "Ștefan",
+      bogdan: buildProfile("bogdan", true),
+      carmen: buildProfile("carmen", true)
+    };
+
+    const kidName = document.getElementById("onb-stefan-name").value.trim();
+    if (kidName) {
+      profiles.stefan = {
+        id: "stefan", name: kidName,
         age: +document.getElementById("onb-stefan-age").value || 4,
         trackWeight: false
-      }
-    };
+      };
+    }
 
     Storage.setProfiles(profiles);
     Storage.addWeight("bogdan", profiles.bogdan.weightKg);
     Storage.addWeight("carmen", profiles.carmen.weightKg);
     this.profiles = profiles;
-    this.toast("Profiluri salvate 🎉");
+
+    // Generăm primul meniu direct pe baza datelor introduse acum,
+    // nu lăsăm meniul generic implicit din aplicație.
+    const { target } = this.householdTarget();
+    const { week } = Generator.generateWeek(target, []);
+    Storage.setCurrentWeek(week, "Săptămâna 1");
+
+    this.toast("Profiluri salvate — meniu generat 🎉");
     this.switchTab("azi");
   },
 
@@ -394,7 +510,7 @@ const App = {
   renderAzi() {
     const c = document.getElementById("app-content");
     const dk = this.todayKey();
-    const plan = WEEK1[dk];
+    const plan = this.activeWeek()[dk];
     const dateKey = this.dateKey();
     const settings = Storage.getSettings();
 
@@ -459,8 +575,8 @@ const App = {
       <div class="section-title">Mișcare azi</div>
       <div class="card">
         <div class="seg" id="activity-person-toggle">
-          <button data-p="bogdan" class="${actPerson === "bogdan" ? "active" : ""}">Bogdan</button>
-          <button data-p="carmen" class="${actPerson === "carmen" ? "active" : ""}">Carmen</button>
+          <button data-p="bogdan" class="${actPerson === "bogdan" ? "active" : ""}">${this.profiles.bogdan.name}</button>
+          <button data-p="carmen" class="${actPerson === "carmen" ? "active" : ""}">${this.profiles.carmen.name}</button>
         </div>
 
         ${todayActs.length ? `
@@ -504,11 +620,11 @@ const App = {
       <div class="card">
         <div class="field-row">
           <div>
-            <label>Bogdan (kg)</label>
+            <label>${this.profiles.bogdan.name} (kg)</label>
             <input type="number" step="0.1" id="qw-bogdan" placeholder="${this.lastWeight("bogdan")}">
           </div>
           <div>
-            <label>Carmen (kg)</label>
+            <label>${this.profiles.carmen.name} (kg)</label>
             <input type="number" step="0.1" id="qw-carmen" placeholder="${this.lastWeight("carmen")}">
           </div>
         </div>
@@ -647,23 +763,37 @@ const App = {
   // ============================================================
   // TAB: MENIU
   // ============================================================
+  householdTarget() {
+    const bogdanTarget = Calc.targetCalories(this.profiles.bogdan);
+    const carmenTarget = Calc.targetCalories(this.profiles.carmen);
+    const [lower, higher] = bogdanTarget <= carmenTarget
+      ? [this.profiles.bogdan, this.profiles.carmen]
+      : [this.profiles.carmen, this.profiles.bogdan];
+    return { target: Math.min(bogdanTarget, carmenTarget), lower, higher, higherTarget: Math.max(bogdanTarget, carmenTarget) };
+  },
+
   renderMeniu() {
     const c = document.getElementById("app-content");
-    const days = Object.keys(WEEK1);
+    const currentEntry = Storage.getCurrentWeek();
+    const week = currentEntry.week;
+    const days = Object.keys(week);
+    const { lower, higher, higherTarget } = this.householdTarget();
+    const kidNote = this.profiles.stefan ? `, porție de copil mai mică pentru ${this.profiles.stefan.name}` : "";
+    const history = Storage.getWeekHistory();
+
     c.innerHTML = `
-      <h1>Meniu — Săptămâna 1</h1>
-      <p style="color:var(--ink-soft);font-size:13px">Bază comună de familie: aceeași mâncare pentru toți, porție de copil mai mică pentru Ștefan. Fără broccoli, fără dovlecei.</p>
+      <h1>Meniu</h1>
+      <p style="color:var(--ink-soft);font-size:13px">${currentEntry.label || "Meniu"}${currentEntry.generatedAt ? " · generat " + new Date(currentEntry.generatedAt).toLocaleDateString("ro-RO") : ""}. Bază comună de familie${kidNote}. Fără broccoli, fără dovlecei.</p>
       <div class="card card-tight" style="background:var(--sage);border:1px solid var(--line);box-shadow:none">
-        <p style="font-size:12.5px;margin:0">📊 Zilele de luni-vineri au ~1750-1860 kcal — porție gândită pentru Carmen. <b>Bogdan</b>, având nevoie de mai multe calorii, adaugă o porție în plus de proteină la prânz și cină (ex. +80-100g carne/pește) ca să ajungă spre ~2600 kcal/zi — vezi ținta exactă în tab-ul Progres.</p>
+        <p style="font-size:12.5px;margin:0">📊 Porție gândită pentru ${lower.name}. <b>${higher.name}</b> adaugă o porție în plus de proteină la prânz și cină ca să ajungă spre ~${higherTarget} kcal/zi.</p>
       </div>
+
+      <button class="btn btn-primary" id="generate-week-btn">🔄 Generează meniu nou pentru săptămâna asta</button>
+      ${history.length ? `<button class="btn btn-ghost" style="margin-top:8px" id="show-history-btn">📋 Vezi istoricul meniurilor (${history.length})</button>` : ""}
+
       ${days.map(dk => {
-        const plan = WEEK1[dk];
-        let kcal = 0;
-        if (!plan.freeDay) {
-          MEAL_ORDER.forEach(t => {
-            if (plan[t] && plan[t] !== "note") kcal += RECIPES[plan[t]].kcal;
-          });
-        }
+        const plan = week[dk];
+        const kcal = Generator.dayKcalTotal(plan);
         return `
           <div class="card day-card">
             <button class="day-head" data-day="${dk}">
@@ -702,6 +832,90 @@ const App = {
     });
     const todayBody = document.getElementById(`day-body-${this.todayKey()}`);
     if (todayBody) todayBody.classList.add("open");
+
+    document.getElementById("generate-week-btn").addEventListener("click", () => this.confirmGenerateWeek());
+    const histBtn = document.getElementById("show-history-btn");
+    if (histBtn) histBtn.addEventListener("click", () => this.renderWeekHistory());
+  },
+
+  confirmGenerateWeek() {
+    const overlay = document.createElement("div");
+    overlay.className = "modal-overlay";
+    overlay.innerHTML = `
+      <div class="modal-sheet" style="position:relative">
+        <button class="modal-close-btn" id="modal-x">✕</button>
+        <div class="modal-close"></div>
+        <h2>Generezi meniu nou?</h2>
+        <p style="font-size:14px">Meniul actual se mută în istoric — îl poți revedea oricând. Noul meniu va folosi, cât se poate, alte rețete decât săptămâna asta, ca să fie variație reală.</p>
+        <button class="btn btn-primary" id="confirm-generate" style="margin-top:10px">Generează</button>
+        <button class="btn btn-outline" style="margin-top:8px" id="cancel-generate">Renunță</button>
+      </div>
+    `;
+    document.body.appendChild(overlay);
+    const close = () => overlay.remove();
+    overlay.addEventListener("click", (e) => { if (e.target === overlay) close(); });
+    overlay.querySelector("#modal-x").addEventListener("click", close);
+    overlay.querySelector("#cancel-generate").addEventListener("click", close);
+    overlay.querySelector("#confirm-generate").addEventListener("click", () => {
+      close();
+      this.generateNewWeek();
+    });
+  },
+
+  generateNewWeek() {
+    const { target } = this.householdTarget();
+    const recentIds = Storage.getCurrentWeek().week
+      ? Object.values(Storage.getCurrentWeek().week).flatMap(d => MEAL_ORDER.map(t => d[t]).filter(id => id && id !== "note"))
+      : [];
+    Storage.archiveCurrentWeekToHistory();
+    const { week } = Generator.generateWeek(target, recentIds);
+    const weekNum = Storage.getWeekHistory().length + 1;
+    Storage.setCurrentWeek(week, `Săptămâna ${weekNum}`);
+    Storage.set(Storage.KEY_SHOPPING, {}); // resetăm bifele de cumpărături pentru noul meniu
+    this.toast("Meniu nou generat 🎉");
+    this.switchTab("meniu");
+  },
+
+  renderWeekHistory() {
+    const c = document.getElementById("app-content");
+    const history = Storage.getWeekHistory();
+    c.innerHTML = `
+      <button class="btn btn-ghost" id="back-to-menu" style="width:auto;padding:8px 14px;margin-bottom:10px">‹ Înapoi la meniu</button>
+      <h1>Istoric meniuri</h1>
+      ${history.length === 0 ? `<div class="empty-state"><div class="big">📋</div><p>Niciun meniu generat încă.</p></div>` : ""}
+      ${history.slice().reverse().map((entry, i) => {
+        const idx = history.length - 1 - i;
+        const days = Object.keys(entry.week);
+        const avgKcal = Math.round(days.filter(d => !entry.week[d].freeDay).reduce((s, d) => s + Generator.dayKcalTotal(entry.week[d]), 0) / days.filter(d => !entry.week[d].freeDay && Generator.dayKcalTotal(entry.week[d]) > 800).length);
+        return `
+          <div class="card day-card">
+            <button class="day-head" data-hist="${idx}">
+              <b>${entry.label || "Meniu"}</b>
+              <span class="day-kcal">${entry.generatedAt ? new Date(entry.generatedAt).toLocaleDateString("ro-RO") : ""}</span>
+            </button>
+            <div class="day-body" id="hist-body-${idx}">
+              ${days.map(dk => {
+                const plan = entry.week[dk];
+                const kcal = Generator.dayKcalTotal(plan);
+                return `<div class="meal-row" style="cursor:default">
+                  <div class="meal-info">
+                    <div class="meal-time">${DAY_LABELS[dk]}</div>
+                    <div class="meal-title">${plan.freeDay ? "Zi liberă" : MEAL_ORDER.map(t => plan[t] && plan[t] !== "note" ? RECIPES[plan[t]].title : null).filter(Boolean).join(" · ")}</div>
+                  </div>
+                  <div class="meal-sub">${plan.freeDay ? "" : kcal + " kcal"}</div>
+                </div>`;
+              }).join("")}
+            </div>
+          </div>
+        `;
+      }).join("")}
+    `;
+    document.getElementById("back-to-menu").addEventListener("click", () => this.switchTab("meniu"));
+    c.querySelectorAll(".day-head[data-hist]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.getElementById(`hist-body-${btn.dataset.hist}`).classList.toggle("open");
+      });
+    });
   },
 
   openRecipeModal(rid) {
@@ -740,21 +954,22 @@ const App = {
   renderCumparaturi() {
     const c = document.getElementById("app-content");
     const checks = Storage.getShoppingChecks();
-    const allKeys = SHOPPING_LIST_WEEK1.flatMap(g => g.items.map(it => `${g.category}:${it.name}`));
+    const shoppingList = ShoppingGen.forWeek(this.activeWeek());
+    const allKeys = shoppingList.flatMap(g => g.items.map(it => `${g.category}:${it.name}`));
     const checkedCount = allKeys.filter(k => checks[k]).length;
     const costs = Storage.getGroceryCosts();
     const lastCosts = costs.slice(-5).reverse();
 
     c.innerHTML = `
       <h1>Listă cumpărături</h1>
-      <p style="color:var(--ink-soft);font-size:13px">Cantități reale pentru toată Săptămâna 1 — cumperi o dată, bifezi pe măsură ce iei de pe raft.</p>
+      <p style="color:var(--ink-soft);font-size:13px">Generată automat din meniul activ — cumperi o dată, bifezi pe măsură ce iei de pe raft.</p>
 
       <div class="card card-tight" style="display:flex;justify-content:space-between;align-items:center">
         <span style="font-weight:800;font-size:15px">${checkedCount} / ${allKeys.length} luate</span>
         <button class="btn btn-ghost" style="width:auto;padding:8px 14px;font-size:12.5px" id="reset-shopping">Resetează bifele</button>
       </div>
 
-      ${SHOPPING_LIST_WEEK1.map(group => `
+      ${shoppingList.map(group => `
         <div class="section-title">${group.category}</div>
         <div class="card card-tight">
           ${group.items.map(it => {
@@ -814,20 +1029,23 @@ const App = {
   renderProgres() {
     const c = document.getElementById("app-content");
     const weights = Storage.getWeights();
+    const kid = this.profiles.stefan;
     c.innerHTML = `
       <h1>Progres</h1>
       ${["bogdan", "carmen"].map(id => this.renderProfileProgress(id, weights[id] || [])).join("")}
 
-      <div class="section-title">Ștefan</div>
-      <div class="card">
-        <div class="profile-card">
-          <div class="avatar kid">Ș</div>
-          <div class="profile-meta">
-            <h3>Ștefan, ${this.profiles.stefan.age} ani</h3>
-            <div class="profile-stats">Participă la mesele de familie, fără urmărire de greutate.</div>
+      ${kid ? `
+        <div class="section-title">${kid.name}</div>
+        <div class="card">
+          <div class="profile-card">
+            <div class="avatar kid">${kid.name[0]}</div>
+            <div class="profile-meta">
+              <h3>${kid.name}, ${kid.age} ani</h3>
+              <div class="profile-stats">Participă la mesele de familie, fără urmărire de greutate.</div>
+            </div>
           </div>
         </div>
-      </div>
+      ` : ""}
     `;
     this.bindProgressEvents();
   },
@@ -861,7 +1079,7 @@ const App = {
           <button class="btn btn-primary" style="margin-top:8px" data-save-weight="${id}">Salvează</button>
         </div>
         <div class="section-title" style="margin-top:18px">Necesar caloric estimat</div>
-        <p style="font-size:13px;margin-top:-4px">Menținere: <b>${maint} kcal/zi</b> · Țintă slăbit: <b>${target} kcal/zi</b></p>
+        <p style="font-size:13px;margin-top:-4px">Menținere: <b>${maint} kcal/zi</b> · Țintă ${(Calc.GOAL_LABELS[p.goal] || "slăbit").toLowerCase()}: <b>${target} kcal/zi</b></p>
 
         <div class="section-title" style="margin-top:18px">Mișcare — ultimele 7 zile</div>
         ${this.renderActivityWeekSummary(id)}
@@ -964,15 +1182,23 @@ const App = {
             <button type="button" data-v="moderat" class="${p.activity === 'moderat' ? 'active' : ''}">Moderat</button>
             <button type="button" data-v="intens" class="${p.activity === 'intens' ? 'active' : ''}">Intens</button>
           </div>
+          <label>Obiectiv</label>
+          <div class="seg" id="ed-${id}-goal">
+            <button type="button" data-v="slabit" class="${p.goal === 'slabit' ? 'active' : ''}">Slăbit</button>
+            <button type="button" data-v="mentinere" class="${p.goal === 'mentinere' ? 'active' : ''}">Menținere</button>
+            <button type="button" data-v="ingrasare" class="${p.goal === 'ingrasare' ? 'active' : ''}">Îngrășare</button>
+          </div>
         </div>`;
       }).join("")}
 
+      ${this.profiles.stefan ? `
       <div class="card">
         <div class="profile-card">
-          <div class="avatar kid">Ș</div>
-          <div class="profile-meta"><h3>Ștefan</h3><div class="profile-stats">${this.profiles.stefan.age} ani · doar mese de familie</div></div>
+          <div class="avatar kid">${this.profiles.stefan.name[0]}</div>
+          <div class="profile-meta"><h3>${this.profiles.stefan.name}</h3><div class="profile-stats">${this.profiles.stefan.age} ani · doar mese de familie</div></div>
         </div>
       </div>
+      ` : ""}
 
       <button class="btn btn-primary" id="save-profiles">Salvează modificările</button>
 
@@ -1012,10 +1238,14 @@ const App = {
       <div class="card">
         ${Storage.isOffline() ? `
           <p style="font-size:13px">Stare: <b>📴 doar pe acest telefon</b></p>
-          <p style="font-size:12.5px;color:var(--ink-soft)">Firebase nu e configurat încă — vezi README.md, secțiunea „Sincronizare", ca Bogdan și Carmen să vadă datele unul altuia în timp real.</p>
+          <p style="font-size:12.5px;color:var(--ink-soft)">Firebase nu e configurat încă — vezi README.md, secțiunea „Sincronizare".</p>
         ` : `
           <p style="font-size:13px">Stare: <b>☁️ sincronizat live</b></p>
           <p style="font-size:12.5px;color:var(--ink-soft)">Conectat ca <b>${Sync._auth?.currentUser?.email || "—"}</b>. Orice schimbare făcută pe un telefon apare automat și pe celălalt, în câteva secunde.</p>
+          <div class="card card-tight" style="background:var(--sage);box-shadow:none;margin-top:10px">
+            <p style="font-size:11.5px;color:var(--ink-soft);margin:0 0 4px">Codul familiei voastre — dă-l partenerului ca să vadă aceleași date</p>
+            <p style="font-size:18px;font-weight:800;letter-spacing:0.08em;margin:0;color:var(--pin-dark)">${Sync.familyId || "—"}</p>
+          </div>
           <button class="btn btn-outline" style="margin-top:10px" id="logout-btn">Deconectează-te</button>
         `}
       </div>
@@ -1044,11 +1274,13 @@ const App = {
         const p = this.profiles[id];
         p.weightKg = +document.getElementById(`ed-${id}-weight`).value || p.weightKg;
         p.heightCm = +document.getElementById(`ed-${id}-height`).value || p.heightCm;
-        const seg = document.getElementById(`ed-${id}-activity`);
-        p.activity = seg.querySelector("button.active")?.dataset.v || p.activity;
+        const actSeg = document.getElementById(`ed-${id}-activity`);
+        p.activity = actSeg.querySelector("button.active")?.dataset.v || p.activity;
+        const goalSeg = document.getElementById(`ed-${id}-goal`);
+        p.goal = goalSeg.querySelector("button.active")?.dataset.v || p.goal;
       });
       Storage.setProfiles(this.profiles);
-      this.toast("Profiluri actualizate ✅");
+      this.toast("Profiluri actualizate ✅ — generează un meniu nou din tab-ul Meniu dacă ai schimbat obiectivul");
     });
 
     c.querySelectorAll(".seg").forEach(seg => {

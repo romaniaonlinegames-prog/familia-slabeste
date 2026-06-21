@@ -1,10 +1,6 @@
 /* ============================================================
    Configurare Firebase — deja completată cu datele proiectului
    "familia-slabeste".
-
-   Dacă vreodată recreezi proiectul Firebase sau adaugi o altă aplicație
-   web, ia noile valori din Firebase Console → Settings (rotița ⚙) →
-   Project settings → secțiunea "Your apps" → și înlocuiește-le mai jos.
    ============================================================ */
 
 export const firebaseConfig = {
@@ -16,7 +12,8 @@ export const firebaseConfig = {
   appId: "1:57927489764:web:f1a80b21df4e9c703e74f1"
 };
 
-// Identificator unic pentru familia voastră — nu mai trebuie schimbat;
-// accesul real e protejat prin email + parolă (vezi firestore.rules.txt),
-// nu prin acest ID.
-export const FAMILY_ID = "bogdan-carmen-stefan-2026";
+/* Codul vechi de familie, dinainte de sistemul de conturi proprii.
+   Bogdan și Carmen îl introduc o singură dată, la "Am deja un cod",
+   ca să-și recupereze datele deja existente — nu se mai folosește
+   nicăieri automat în cod, e doar referință pentru voi doi:
+   bogdan-carmen-stefan-2026 */

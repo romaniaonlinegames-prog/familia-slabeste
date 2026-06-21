@@ -12,6 +12,8 @@ const Storage = {
   KEY_ACTIVITY: "activity",
   KEY_GROCERY_COSTS: "groceryCosts",
   KEY_DAY_NOTES: "dayNotes",
+  KEY_CURRENT_WEEK: "currentWeek",
+  KEY_WEEK_HISTORY: "weekHistory",
 
   get(key, fallback) {
     const v = Sync.get(key);
@@ -142,5 +144,28 @@ const Storage = {
     else delete notes[dateKey];
     this.set(this.KEY_DAY_NOTES, notes);
     return notes;
+  },
+
+  // --- Meniul săptămânii curente (generat) — dacă lipsește, se folosește WEEK1 din data.js ---
+  getCurrentWeek() {
+    const stored = this.get(this.KEY_CURRENT_WEEK, null);
+    return stored && stored.week ? stored : { week: WEEK1, generatedAt: null, label: "Meniu inițial" };
+  },
+  setCurrentWeek(week, label) {
+    const entry = { week, generatedAt: new Date().toISOString(), label: label || "Săptămână generată" };
+    this.set(this.KEY_CURRENT_WEEK, entry);
+    return entry;
+  },
+
+  // --- Istoric săptămâni — array, cele mai vechi primele ---
+  getWeekHistory() {
+    return this.get(this.KEY_WEEK_HISTORY, []);
+  },
+  archiveCurrentWeekToHistory() {
+    const current = this.getCurrentWeek();
+    if (!current.generatedAt) return; // nu arhivăm meniul inițial implicit
+    const history = this.getWeekHistory();
+    history.push(current);
+    this.set(this.KEY_WEEK_HISTORY, history);
   }
 };

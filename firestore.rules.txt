@@ -1,24 +1,27 @@
 // Reguli de securitate Firestore pentru "Familia Slăbește"
 //
-// Deja completate cu email-urile reale ale conturilor voastre.
-// Dacă vreodată adăugați un cont nou (alt membru, alt email), adăugați-l
-// în lista de mai jos și apăsați din nou "Publish" în Firebase Console
-// (Firestore Database → tab "Rules").
+// Cum le pui: Firebase Console → Firestore Database → tab "Rules" →
+// înlocuiește tot conținutul cu ce e mai jos → Publish.
 //
-// Ce fac: permit citire/scriere DOAR celor doi utilizatori autentificați
-// cu parolă, ale căror email-uri sunt în lista de mai jos. Chiar dacă
-// tot codul aplicației (inclusiv acest fișier) e public pe GitHub,
-// nimeni altcineva nu poate intra fără parola unuia dintre voi doi.
+// Model nou: fiecare cont (users/{uid}) e legat de o familie
+// (families/{familyId}), prin câmpul "familyId". Doar membrii unei
+// familii pot citi/scrie datele acelei familii.
 
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+
+    // Fiecare utilizator își poate citi/scrie DOAR propriul document
+    // de cont (acolo ținem legătura cu familia lui).
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Datele unei familii — permise doar celor al căror cont (users/{uid})
+    // are familyId == familyId-ul cerut aici.
     match /families/{familyId}/data/{document} {
       allow read, write: if request.auth != null
-        && request.auth.token.email in [
-          "bphoto.ro@gmail.com",
-          "marincus.carmen@gmail.com"
-        ];
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.familyId == familyId;
     }
   }
 }

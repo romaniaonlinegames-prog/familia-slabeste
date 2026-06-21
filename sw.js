@@ -2,13 +2,15 @@
    Service Worker — caching offline + afișare notificări
    ============================================================ */
 
-const CACHE_NAME = "familia-slabeste-v3";
+const CACHE_NAME = "familia-slabeste-v4";
 const ASSETS = [
   "./",
   "./index.html",
   "./css/styles.css",
   "./js/data.js",
   "./js/calc.js",
+  "./js/generator.js",
+  "./js/shopping.js",
   "./js/notifications.js",
   "./js/pedometer.js",
   "./js/sync.js",
